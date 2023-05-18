@@ -1,6 +1,8 @@
 import machine
 import ssd1306
 import time
+import urequests
+import network
 
 SCREEN_WIDTH = 128  # OLED display width, in pixels
 SCREEN_HEIGHT = 64  # OLED display height, in pixels
@@ -19,10 +21,24 @@ SOUND_SPEED = 0.034
 # Threshold, in cm, for the device to consider a bin full
 THRESHOLD = 8
 
+# Wi-Fi credentials
+WIFI_SSID = "Wokwi-GUEST"
+WIFI_PASSWORD = ""
+
 # Initialize variables
 duration = 0
 distance_cm = 0
 full = False
+
+# Connect to Wi-Fi
+print("Connecting to WiFi", end="")
+wifi = network.WLAN(network.STA_IF)
+wifi.active(True)
+wifi.connect(WIFI_SSID, WIFI_PASSWORD)
+while not wifi.isconnected():
+  print(".", end="")
+  time.sleep(0.1)
+print(" Connected!")
 
 # Setup display
 display.fill(0)
@@ -62,6 +78,12 @@ while True:
     display.text('Distance:', 0, 0, 1)
     display.text('FULL' if full else f'{distance_cm} cm', 0, 16, 1)
     display.show()
+
+    # Send HTTP GET request (testing)
+    if full:
+        r = urequests.get("http://example.org/")
+        print(r.content)
+        r.close()
 
     # Update every 3 seconds
     time.sleep(3)
