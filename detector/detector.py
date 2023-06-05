@@ -2,6 +2,7 @@ import machine
 import ssd1306
 import time
 import urequests
+from ujson import dumps
 import network
 
 SCREEN_WIDTH = 128  # OLED display width, in pixels
@@ -81,8 +82,10 @@ while True:
 
     # Send HTTP GET request (testing)
     if full:
-        r = urequests.get("http://example.org/")
-        print(r.content)
+        request_url = "http://jsonplaceholder.typicode.com/posts"
+        post_data = dumps({ "data": "test" })
+        r = urequests.post(request_url, headers = {'content-type': 'application/json'}, data = post_data)
+        print(dumps(r.json()))
         r.close()
 
     # Update every 3 seconds
