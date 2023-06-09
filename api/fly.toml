@@ -1,0 +1,27 @@
+# fly.toml app configuration file generated for espetinho on 2023-06-01T20:47:36-03:00
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
+
+app = "bin-monitor-api"
+primary_region = "gru"
+kill_signal = "SIGINT"
+kill_timeout = "5s"
+
+[[services]]
+  protocol = "tcp"
+  internal_port = 8080
+  processes = ["app"]
+
+  [[services.ports]]
+    port = 80
+    handlers = ["http"]
+    force_https = true
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls", "http"]
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 25
+    soft_limit = 20
