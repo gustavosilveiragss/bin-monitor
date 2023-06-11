@@ -44,10 +44,11 @@ async fn main() -> std::io::Result<()> {
             .wrap(cors)
             .default_service(web::to(|| HttpResponse::NotFound()))
             .service(fetch_bins::fetch_bins)
+            .service(fetch_single_bin::fetch_single_bin)
             .service(update_bin::update_bin)
     })
-    //  .bind(("0.0.0.0", 8080))
-    .bind(("127.0.0.1", 8080))
+    .bind(("0.0.0.0", 8080))
+    //.bind(("127.0.0.1", 8080))
     .expect("Unable to bind http server")
     .run()
     .await

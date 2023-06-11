@@ -10,6 +10,6 @@ RUN apt-get update && apt-get upgrade -y
 RUN apt-get install -y libpq5
 RUN rm -rf /var/lib/apt/lists/*
 
-COPY target/x86_64-unknown-linux-gnu/release/espetinho-api /app/espetinho-api
+COPY target/x86_64-unknown-linux-gnu/release/bin-monitor-api /app/bin-monitor-api
 
-CMD ["/app/espetinho-api", "--port", "8080"]
+CMD ["/app/bin-monitor-api", "--port", "8080"]

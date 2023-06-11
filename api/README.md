@@ -1,4 +1,4 @@
-# Espetinho API: Actix Web API with Diesel and PostgreSQL
+# Bin Monitor API: Actix Web API with Diesel and PostgreSQL
 
 This is the repo for the API to handle the espetinho for Alcance Social
 
