@@ -4,6 +4,7 @@ import time
 import urequests
 from ujson import dumps
 import network
+import math
 
 SCREEN_WIDTH = 128  # OLED display width, in pixels
 SCREEN_HEIGHT = 64  # OLED display height, in pixels
@@ -19,8 +20,8 @@ echo_pin = machine.Pin(18, machine.Pin.IN)
 # Speed of sound in cm/uS
 SOUND_SPEED = 0.034
 
-# Threshold, in cm, for the device to consider a bin full
-THRESHOLD = 8
+# Full height of the bin in cm
+FULL_HEIGHT = 50
 
 # Wi-Fi credentials
 WIFI_SSID = "Wokwi-GUEST"
@@ -29,7 +30,8 @@ WIFI_PASSWORD = ""
 # Initialize variables
 duration = 0
 distance_cm = 0
-full = False
+status = 0.0  # Represents the percentage of how full the bin is
+previous_status = 0.0  # Tracks the previous status
 
 # Connect to Wi-Fi
 print("Connecting to WiFi", end="")
@@ -37,13 +39,12 @@ wifi = network.WLAN(network.STA_IF)
 wifi.active(True)
 wifi.connect(WIFI_SSID, WIFI_PASSWORD)
 while not wifi.isconnected():
-  print(".", end="")
-  time.sleep(0.1)
+    print(".", end="")
+    time.sleep(0.1)
 print(" Connected!")
 
 # Setup display
 display.fill(0)
-display.text('Distance:', 0, 0, 1)
 display.show()
 
 while True:
@@ -68,23 +69,32 @@ while True:
     pulse_duration = pulse_end - pulse_start
     distance_cm = pulse_duration * SOUND_SPEED / 2
 
-    # Check if the distance is within the threshold and set status to full if necessary
-    full = distance_cm <= THRESHOLD
+    # Calculate the current status as a percentage
+    if distance_cm <= FULL_HEIGHT:
+        status = round(1 - distance_cm / FULL_HEIGHT, 2)
+    else:
+        status = 0.0
 
-    # Prints the distance
+    # Prints the distance and status
     print('Distance (cm):', distance_cm)
+    print('Status (%):', status)
 
-    # Prints distance or "full" in the display
-    display.fill(0)
-    display.text('Distance:', 0, 0, 1)
-    display.text('FULL' if full else f'{distance_cm} cm', 0, 16, 1)
-    display.show()
+    # Check if the status has a variation of over 2%
+    # This should prevent unnecessary calls to the API
+    if math.fabs(status - previous_status) > 0.02:
+        # Update previous_status for the next iteration
+        previous_status = status
 
-    # Send HTTP GET request (testing)
-    if full:
-        request_url = "http://jsonplaceholder.typicode.com/posts"
-        post_data = dumps({ "data": "test" })
-        r = urequests.post(request_url, headers = {'content-type': 'application/json'}, data = post_data)
+        # Update the display
+        display.fill(0)
+        display.text('Status:', 0, 0, 1)
+        display.text(f'{status * 100}%', 0, 16, 1)
+        display.show()
+
+        # Send HTTP PATCH request
+        request_url = "https://bin-monitor-api.fly.dev/bin"
+        bin_data = dumps({"id": 1, "status": str(status)})
+        r = urequests.patch(request_url, headers={'content-type': 'application/json'}, data=bin_data)
         print(dumps(r.json()))
         r.close()
 
