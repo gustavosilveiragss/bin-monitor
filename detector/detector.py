@@ -28,10 +28,7 @@ WIFI_SSID = "Wokwi-GUEST"
 WIFI_PASSWORD = ""
 
 # Initialize variables
-duration = 0
-distance_cm = 0
-status = 0.0  # Represents the percentage of how full the bin is
-previous_status = 0.0  # Tracks the previous status
+duration = distance_cm = status = previous_status = 0
 
 # Connect to Wi-Fi
 print("Connecting to WiFi", end="")
@@ -43,9 +40,14 @@ while not wifi.isconnected():
     time.sleep(0.1)
 print(" Connected!")
 
-# Setup display
-display.fill(0)
-display.show()
+def update_display():
+    # Update the display
+    display.fill(0)
+    display.text('Status:', 0, 0, 1)
+    display.text(f'{status * 100}%', 0, 16, 1)
+    display.show()
+
+update_display()
 
 while True:
     # Clears the trigPin
@@ -61,7 +63,6 @@ while True:
     pulse_start = pulse_end = time.ticks_us()
     while echo_pin.value() == 0:
         pulse_start = time.ticks_us()
-
     while echo_pin.value() == 1:
         pulse_end = time.ticks_us()
 
@@ -75,7 +76,6 @@ while True:
     else:
         status = 0.0
 
-    # Prints the distance and status
     print('Distance (cm):', distance_cm)
     print('Status (%):', status)
 
@@ -85,15 +85,11 @@ while True:
         # Update previous_status for the next iteration
         previous_status = status
 
-        # Update the display
-        display.fill(0)
-        display.text('Status:', 0, 0, 1)
-        display.text(f'{status * 100}%', 0, 16, 1)
-        display.show()
+        update_display()
 
         # Send HTTP PATCH request
         request_url = "https://bin-monitor-api.fly.dev/bin"
-        bin_data = dumps({"id": 1, "status": str(status)})
+        bin_data = dumps({"id": 2, "status": str(status)})
         r = urequests.patch(request_url, headers={'content-type': 'application/json'}, data=bin_data)
         print(dumps(r.json()))
         r.close()
