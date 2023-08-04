@@ -25,10 +25,10 @@ float distanceCm = 0;
 #define FULL_HEIGHT 40.0 // Full height of the bin in cm
 
 // Wi-Fi credentials
-const char* WIFI_SSID = "WOWKW";
-const char* WIFI_PASSWORD = "dsadadasd";
+const char* WIFI_SSID = "";
+const char* WIFI_PASSWORD = "";
 
-const char* requestUrl = "https://bin-monitor-api.fly.dev/bin";
+const char* requestUrl = "";
 
 HTTPClient http;
 
@@ -125,8 +125,6 @@ void loop() {
 
     String payload;
     serializeJson(binData, payload);
-
-    Serial.println("payload: " + payload);
 
     http.begin(requestUrl);
     http.addHeader("Content-Type", "application/json");
